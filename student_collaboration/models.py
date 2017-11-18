@@ -157,7 +157,7 @@ class HelpRequest(models.Model):
         self.save()
 
     def close_request(self, comment=None, close_category=None):
-        self.state = HelpRequest.CLOSED
+        self.change_state(HelpRequest.CLOSED)
         """ If a comment is present """
         if comment is not None:
             self.comment = comment

@@ -43,7 +43,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_crontab',
+    'celery',
+    'django_celery_beat',
     'authentification',
     'bootstrap3',
     'django_extensions',
@@ -133,10 +134,6 @@ LOGGING = {
             'handlers': ['console'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
-        'django_crontab': {
-            'handlers': ['console'],
-            'level': 'INFO',
-        }
     },
 }
 
@@ -203,9 +200,3 @@ EMAIL_HOST_USER ="euredukaoscar.noreply@gmail.com"
 EMAIL_HOST_PASSWORD ="7A=em=nBt@+r3MFq"
 
 EMAIL_USE_TLS = True
-
-""" Cron tasks """
-CRONJOBS = [
-    ('* * * * *', 'student_collaboration.cron.set_open_help_request_to_pending'),
-    ('* * * * *', 'student_collaboration.cron.close_pending_help_requests_automatically_when_expired'),
-]
