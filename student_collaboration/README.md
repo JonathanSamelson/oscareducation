@@ -6,14 +6,7 @@ Run the tests
 
 python manage.py test student_collaboration
 
-Run this command to add all defined jobs from CRONJOBS to crontab (of the user which you are running this command with):
+Sources for celery
 
-python manage.py crontab add
-
-show current active jobs of this project:
-
-python manage.py crontab show
-
-removing all defined jobs is straight forward:
-
-python manage.py crontab remove
+https://pythad.github.io/articles/2016-12/how-to-run-celery-as-a-daemon-in-production
+http://docs.celeryproject.org/en/latest/userguide/daemonizing.html#init-script-celerybeat
