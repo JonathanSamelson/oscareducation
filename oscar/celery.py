@@ -13,5 +13,8 @@ app = Celery('oscar')
 #   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
+# Broker settings
+app.conf.broker_url = 'amqp://oscar:oscar@localhost:5672/oscarRabbit'
+
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
