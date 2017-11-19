@@ -20,7 +20,7 @@ CELERYD_CHDIR="/home/jy95/Documents/oscareducation"
 
 # Extra command-line arguments to the worker
 # django_celery_beat for admin purpuse
-CELERYD_OPTS="--scheduler django_celery_beat.schedulers:DatabaseScheduler -f /var/log/celery/celery_tasks.log"
+CELERYD_OPTS="-f /var/log/celery/celery_tasks.log"
 
 # Set logging level to DEBUG
 #CELERYD_LOG_LEVEL="DEBUG"
