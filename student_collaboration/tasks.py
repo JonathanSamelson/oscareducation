@@ -21,7 +21,8 @@ MINUTES_BEFORE_CLOSE = 0
 
 # http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html
 # for schedule : http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html#crontab-schedules
-@celery_app.on_after_configure.connect
+# Why on_after_finalize ? https://stackoverflow.com/a/41119054/6149867
+@celery_app.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
 
     sender.add_periodic_task(

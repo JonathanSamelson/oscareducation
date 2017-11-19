@@ -6,6 +6,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 
+from __future__ import absolute_import, unicode_literals
+# ^^^ The above is required if you want to import from the celery
+# library.  If you don't have this then `from celery.schedules import`
+# becomes `proj.celery.schedules` in Python 2.x since it allows
+# for relative imports by default.
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -200,3 +206,10 @@ EMAIL_HOST_USER ="euredukaoscar.noreply@gmail.com"
 EMAIL_HOST_PASSWORD ="7A=em=nBt@+r3MFq"
 
 EMAIL_USE_TLS = True
+
+# Celery settings
+# - namespace='CELERY' means all celery-related configuration keys
+#   should have a `CELERY_` prefix.
+# http://docs.celeryproject.org/en/latest/userguide/configuration.html#new-lowercase-settings
+CELERY_beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'  # use django_celery_beat instead
+CELERY_broker_url = 'amqp://oscar:oscar@localhost:5672/oscarRabbit'
