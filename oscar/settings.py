@@ -63,7 +63,8 @@ INSTALLED_APPS = (
     'end_test_poll',
     'student_collaboration',
     'forum',
-    'widget_tweaks'
+    'widget_tweaks',
+    'notifications'
 ) + ADDITIONAL_APPS
 
 MIDDLEWARE = (

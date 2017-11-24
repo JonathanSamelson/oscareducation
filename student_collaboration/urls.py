@@ -7,6 +7,7 @@ urlpatterns = [
     # View example : views.update_settings
     # Url Example : url(r'^dashboard/$', views.dashboard, name='student_dashboard'),
     url(r'^$', views.collaborative_home, name='collaborative_home'),
+    url(r'^notifications/$', views.collaborative_notifications, name='notifications'),
     url(r'^settings/$', views.update_settings, name='settings'),
     url(r'^request_help/$', views.submit_help_request, name='request_help'),
     url(r'^provide_help/$', views.OpenHelpRequestsListView.as_view(), name='provide_help'),

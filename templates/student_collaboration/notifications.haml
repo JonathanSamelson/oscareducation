@@ -1,5 +1,6 @@
--extends "student_collaboration/template.haml"
 
+
+-extends "student_collaboration/template.haml"
 
 -block content-student
   - if not user.student.studentcollaborator.collaborative_tool
@@ -9,9 +10,4 @@
   - else
     .transparent-frame.col-md-5.center-block
       %p Le module de collaboration est activé
-  
-
-  
-   
-
 

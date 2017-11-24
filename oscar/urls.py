@@ -2,10 +2,12 @@ from django.conf.urls.static import static
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
+import notifications.urls
 
 from . import views
 
 urlpatterns = [
+    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
     url(r'^accounts/', include('authentification.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^professor/', include("promotions.urls", namespace="professor")),

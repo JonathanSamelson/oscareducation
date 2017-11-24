@@ -15,11 +15,12 @@ from skills.models import Skill
 from .forms import StudentCollaboratorForm, CollaborativeSettingsForm, UnmasteredSkillsForm, HelpRequestForm, SkillsForm
 from math import sin, cos, sqrt, atan2, radians
 from decorators import user_has_collaborative_tool_active
-
+from notifications.signals import notify
 
 # Create your views here.
 @login_required
 def update_settings(request):
+    notify.send(sender=request.user, recipient=request.user, verb='you reached level 10')
     # POST request; we perform an update
     true_student = get_object_or_404(Student, user=request.user.pk)
     student = get_object_or_404(StudentCollaborator, pk=true_student.studentcollaborator.pk)
@@ -76,6 +77,7 @@ def submit_help_request(request):
             created_hr = student_collab.launch_help_request(settings)
             for skill in skill_form.cleaned_data.get("list"):
                 created_hr.skill.add(skill)
+	    
             return HttpResponseRedirect("/student_collaboration/help_request_history/")
     else:
         skill_form = UnmasteredSkillsForm(skills=list_skill_unmastered, current_user=request.user.student.pk)
@@ -212,3 +214,18 @@ class OpenHelpRequestsListView(ListView):
         """ https://stackoverflow.com/a/33350839/6149867 """
 
         return filtered_help_requests
+
+
+@login_required
+def collaborative_notifications(request):
+    return render(request, 'student_collaboration/notifications.haml')
+
+@login_required
+class NotificationViewList(ListView):
+    template_name = 'notifications/list.html'
+    context_object_name = 'notifications'
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        return super(NotificationViewList, self).dispatch(
+            request, *args, **kwargs)

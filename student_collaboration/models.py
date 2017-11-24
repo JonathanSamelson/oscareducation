@@ -13,6 +13,7 @@ from datetime import datetime
 # the custom way to handle student collaboration
 from promotions.signals import student_added_to_lesson
 from promotions.models import Lesson
+from notifications.signals import notify
 
 
 # Create your models here.
@@ -165,8 +166,10 @@ class HelpRequest(models.Model):
         thread.skills = Skill.objects.filter(pk__in=self.skill.all())
         thread.save()
 
+        notify.send(sender=self.student.user, recipient=user.user, verb='Un tuteur a décidé de vous aider')
         self.thread = thread
         self.save()
+        
 
     def close_request(self, comment=None, close_category=None):
         self.state = HelpRequest.CLOSED
