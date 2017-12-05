@@ -166,7 +166,7 @@ class HelpRequest(models.Model):
         thread.skills = Skill.objects.filter(pk__in=self.skill.all())
         thread.save()
 
-        notify.send(sender=self.student.user, recipient=user.user, verb='Un tuteur a décidé de vous aider')
+        notify.send(sender=self.student.user, recipient=user.user, verb='Un étudiant a décidé de vous aider')
         self.thread = thread
         self.save()
         

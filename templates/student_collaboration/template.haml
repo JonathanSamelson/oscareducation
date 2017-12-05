@@ -31,18 +31,14 @@
         {% url 'help_request_history' as url %}
         %li.nav-item{class: "{% if request.path == url %}nav-item-active{% endif %}"}
           %a.nav-link{href: "{% url 'help_request_history' %}"} Historique
-	{% url 'notifications' as url %}
- 
-	
-      
-	{% live_notify_list classes="dropdown-menu" %}
-        {% register_notify_callbacks callbacks='fill_notification_list,fill_notification_badge' %}
-	
-	
-      {% live_notify_badge classes="nav-item-active badge" %}
-	{% notifications_unread as unread_count %}
-	{% if unread_count %}
-	    Vous avez <strong>{{ unread_count }}</strong> notifications non lues.
-	{% endif %} 
+
+  {% url 'notifications' as url %}
+
+  {% live_notify_list %}
+  {% live_notify_badge classes="nav-item-active badge" %}
+  {% notifications_unread as unread_count %}
+  {% if unread_count %}
+    Vous avez <strong>{{ unread_count }}</strong> notifications non lues.
+  {% endif %}
 
 	
