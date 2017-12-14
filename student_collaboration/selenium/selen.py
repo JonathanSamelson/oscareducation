@@ -1,5 +1,6 @@
 import os
 import traceback
+import collections
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -16,15 +17,15 @@ ADMIN_PASSWORD = "root"
 
 TEACHER_PSEUDO = "TestTeacher"
 TEACHER_PASSWORD = "test"
-CLASS_NAME = "testClass"
+CLASS_NAME = "testClass015"
 STUDENTS = (
-	("fnselen11", "lnselen11"),
-	("fnselen22", "lnselen22")
+	("fnselen11", "lnselen015"),
+	("fnselen22", "lnselen015")
 )
 
 STUDENTS_SKILLS = (
-	{"mastered":("P3D-U3-T2", "P3D-U3-C2"), "unmastered":("P3D-U3-A2",)},   # Careful to master skill that other don't
-	{"unmastered": ("P3D-U3-T2", "P3D-U3-C2"), "mastered": ("P3D-U3-A2",)}
+	{"unmastered":("P3D-U3-T2", "P3D-U3-C2", "P3D-U3-A2", "P3D-U3-A1")},   # Careful to master skill that other don't
+	{"mastered": ("P3D-U3-T2", "P3D-U3-C2", "P3D-U3-A2", "P3D-U3-A1")}
 )
 
 STUDENT_ID = (
@@ -109,8 +110,11 @@ class Selenium:
 		studentParams = students_collaborative_tools_params[curIndex]
 		self.__testFunction(self.activateCollaborativeTool, studentParams[0], studentParams[1])
 		# The first to connect ask for help
-		askRequestText = self.__testFunction(self.askHelp)
-
+		askRequestText = self.__testFunction(self.askHelp, 1)
+		askRequestText += self.__testFunction(self.askHelp, 2)
+		askRequestText += self.__testFunction(self.askHelp, 4)
+		# askRequestText += self.__testFunction(self.askHelp, 3) # maximum 3 requests
+		print(askRequestText)
 
 		# With the second one we check that the help request exists
 		self.addDriver()
@@ -256,7 +260,9 @@ class Selenium:
 		self.getCurrentDriver().execute_script(
 			"document.evaluate(\"/html/body/div[2]/div[2]/div/div[2]/form/div[2]/div[2]/div[2]/ul[5]/li/div/label\", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click()")
 		radioButton.submit()
+		# 	self.getCurrentDriver().execute_script("window.history.go(-1)")
 		# Logically it contains with a regex but we skip this part
+		print(self.getCurrentDriver().current_url)
 		self.__testURL("professor/lesson/[0-9]*/student/add/", "The add student page wasn't loaded sucessfully after adding the class")
 
 	def addStudents(self, studentList):
@@ -339,7 +345,8 @@ class Selenium:
 		studentDict = {}
 		for i in range(len(studentList) // 8):
 			studentDict[studentList[4 + i * 8].decode()] = studentList[7 + i * 8].decode()
-		return studentDict
+		return collections.OrderedDict(sorted(studentDict.items())) # sort the dict to prevent problems
+
 
 	def __logInFirstStep(self, userName):
 		self.getCurrentDriver().get(BASE_URL + "accounts/usernamelogin")
@@ -399,7 +406,7 @@ class Selenium:
 
 		distanceBox.submit()
 
-	def askHelp(self):
+	def askHelp(self, numberOfHelpElem):
 		""" Will automatically ask help for his first unmastered skill.
 		 We consider that the a student is logged in & have activated its collaborative tool & have at least one un mastered skill """
 		self.getCurrentDriver().get(BASE_URL+"student_collaboration/request_help/")
@@ -409,11 +416,11 @@ class Selenium:
 		dropdown = self.__waitElementByCSSSlector(".multiselect.dropdown-toggle.btn.btn-default")
 		dropdown.click()
 		# Check the checkbox of the first unmastered skill (to hard to find the corresponding skill)
-		xPathFirstCheck = "/html/body/div[2]/div[3]/div/form/div/div/span/div/ul/li[1]/a/label/input"
-		firstUnmasteredSkill = self.__waitElementByXPath(xPathFirstCheck)
-		skillText = self.__waitElementByXPath("/html/body/div[2]/div[3]/div/form/div/div/span/div/ul/li[1]/a/label").text
-		firstUnmasteredSkill.click()
-		firstUnmasteredSkill.submit()
+		xPathCheck = "/html/body/div[2]/div[3]/div/form/div/div/span/div/ul/li[%s]/a/label/input" % numberOfHelpElem
+		unmasteredSkill = self.__waitElementByXPath(xPathCheck)
+		skillText = self.__waitElementByXPath("/html/body/div[2]/div[3]/div/form/div/div/span/div/ul/li[%s]/a/label" % numberOfHelpElem).text
+		unmasteredSkill.click()
+		unmasteredSkill.submit()
 #		self.__waitElementById("send_help_request").click()
 		# After submission we are redircted to the history tab
 		try:
