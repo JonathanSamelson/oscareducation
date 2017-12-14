@@ -442,7 +442,7 @@ class Selenium:
 		# Find the accept button
 		xPathTableText = '//*[@id="provide-help"]/tbody[2]/tr/td[2]/li'
 		skillText = self.__waitElementByXPath(xPathTableText).text
-		xPathFirstButton = '//*[@id="provide-help"]/tbody[2]/tr[1]/td[4]/button'
+		xPathFirstButton = '//*[@id="provide-help"]/tbody[2]/tr[1]/td[4]/a'
 		# WARNING : it layout have not changed, the Accept button will probably be overlapped by the django debug tab
 		# That's why we hide it on the object constructor
 		self.__clickButtonByXPath(xPathFirstButton)
