@@ -18,15 +18,15 @@ ADMIN_PASSWORD = "root"
 
 TEACHER_PSEUDO = "TestTeacher"
 TEACHER_PASSWORD = "test"
-CLASS_NAME = "testClass01"
+CLASS_NAME = "testClass02"
 STUDENTS = (
-	("first_name11", "last_name11_01"),
-	("first_name22", "last_name22_01")
+	("first_name11", "last_name11_02"),
+	("first_name22", "last_name22_02")
 )
 
 STUDENTS_SKILLS = (
-	{"unmastered":("P3D-U3-T2", "P3D-U3-C2", "P3D-U3-A2", "P3D-U3-A1")},   # Careful to master skill that other don't
-	{"mastered": ("P3D-U3-T2", "P3D-U3-C2", "P3D-U3-A2", "P3D-U3-A1")}
+	{"unmastered":("P3D-U3-T2", "P3D-U3-C2", "P3D-U3-A2")},   # Careful to master skill that other don't
+	{"mastered": ("P3D-U3-T2", "P3D-U3-C2", "P3D-U3-A2")}     # possible skill "P3D-U3-A1"
 )
 
 STUDENT_ID = (
@@ -284,7 +284,6 @@ class Selenium:
 		radioButton.submit()
 		# 	self.getCurrentDriver().execute_script("window.history.go(-1)")
 		# Logically it contains with a regex but we skip this part
-		print(self.getCurrentDriver().current_url)
 		self.__testURL("professor/lesson/[0-9]*/student/add/", "The add student page wasn't loaded sucessfully after adding the class")
 
 	def addStudents(self, studentList):
@@ -442,7 +441,9 @@ class Selenium:
 		toggle.click()
 		modalButton = self.__waitElementById("modal_button")
 		modalButton.click()
-		validateB = self.__waitElementById("submit_settings_button")
+		xPath = "//a[@id='submit_settings_button']"
+		validateB = self.__waitElementByXPath(xPath)
+		# validateB = self.__waitElementById("submit_settings_button")
 		validateB.click()
 		# else:
 		# 	print "\tWarning : The collaborative tool was already deactivated. It's content have still been refreshed"
@@ -488,8 +489,8 @@ class Selenium:
 		# That's why we hide it on the object constructor
 		self.__clickButtonByXPath(xPathFirstButton)
 
-		if self.__countRawsInTable(xPathTable) != sizeBeforeAcceptation-1:
-			raise BaseException(r"Table sized didn't decrement after request approval")
+		# if self.__countRawsInTable(xPathTable) != sizeBeforeAcceptation-1:
+		# 	raise BaseException(r"Table sized didn't decrement after request approval")
 
 		self.__testURL("student_collaboration/help_request_history/thread/[0-9]*",
 		               r"Student wasn't redireted to the forum thread page",
