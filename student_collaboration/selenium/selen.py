@@ -1,24 +1,27 @@
+# -*- coding: utf-8 -*-
 import os
 import traceback
 import collections
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.common.action_chains import ActionChains
 import re
+
+BASE_URL = "http://127.0.0.1:8000/"
 
 ADMIN_PSEUDO = "root"
 ADMIN_PASSWORD = "root"
 
 TEACHER_PSEUDO = "TestTeacher"
 TEACHER_PASSWORD = "test"
-CLASS_NAME = "testClass015"
+CLASS_NAME = "testClass01"
 STUDENTS = (
-	("fnselen11", "lnselen015"),
-	("fnselen22", "lnselen015")
+	("first_name11", "last_name11_01"),
+	("first_name22", "last_name22_01")
 )
 
 STUDENTS_SKILLS = (
@@ -46,9 +49,6 @@ STUDENTS_FORUM_MESSAGES = (
 
 class Selenium:
 	TIMEOUT_BUTTON_WAIT = 15
-	# default base url if lanched by another guy
-	BASE_URL = "http://127.0.0.1:8000/"
-
 	def __init__(self):
 		self.drivers = []
 		self.addDriver()
@@ -57,9 +57,7 @@ class Selenium:
 	def __initDriver(self):
 		""" See readme file for more explication if trouble to install """
 		if os.name == "nt":  # if it is a windows platform
-			selenium_path = dir_path = os.path.dirname(os.path.realpath(__file__))
-			driver_path = os.path.join(selenium_path, r"chromedriver.exe")
-			driver = webdriver.Chrome(driver_path)
+			driver = webdriver.Chrome(r"chromedriver.exe")
 		else:
 			driver = webdriver.Chrome()
 		driver.wait = WebDriverWait(driver, 1)
@@ -68,7 +66,7 @@ class Selenium:
 
 	def __hideDjangoDebug(self):
 		""" Django DEbug Tab sometime overlap buttons that selenium try to click, so we hide it"""
-		self.getCurrentDriver().get(self.BASE_URL)
+		self.getCurrentDriver().get(BASE_URL)
 		hideButton = self.__waitElementById("djHideToolBarButton")
 		hideButton.click()
 
@@ -76,7 +74,6 @@ class Selenium:
 	def testAll(self):
 		""" All tests """
 		#self.testAdmin(ADMIN_PSEUDO, ADMIN_PASSWORD)
-		self.__hideDjangoDebug()
 
 		self.testTeacherClassCreation(TEACHER_PSEUDO, TEACHER_PASSWORD, CLASS_NAME, STUDENTS, STUDENTS_SKILLS)
 
@@ -105,7 +102,7 @@ class Selenium:
 		for studentUserName, studentCode in studentCodes.iteritems():
 			self.__testFunction(self.logInStudent, studentUserName, STUDENTS_PASSWORD, studentCode)
 			self.logOutUser()
-		return studentCodes.keys()
+		return sorted(studentCodes.keys())
 
 	def testCollaborativeTool(self, studentsPseudo, students_collaborative_tools_params):
 		# With the first user we create a help request
@@ -115,8 +112,8 @@ class Selenium:
 		self.__testFunction(self.activateCollaborativeTool, studentParams[0], studentParams[1])
 		# The first to connect ask for help
 		askRequestText = self.__testFunction(self.askHelp, 1)
-		askRequestText += self.__testFunction(self.askHelp, 2)
-		askRequestText += self.__testFunction(self.askHelp, 4)
+		# askRequestText += self.__testFunction(self.askHelp, 2)
+		# askRequestText += self.__testFunction(self.askHelp, 4)
 		# askRequestText += self.__testFunction(self.askHelp, 3) # maximum 3 requests
 		print(askRequestText)
 
@@ -139,6 +136,27 @@ class Selenium:
 		# We step back to the collborative history and close the request
 		self.__testFunction(self.closeFirstHelpRequest)
 
+		askRequestText = self.__testFunction(self.askHelp, 3)
+
+		curIndex = 1
+		self.setDriverIndex(curIndex)
+		self.acceptHelpRequest()
+		self.__testFunction(self.sendForumMessage, "Second helprequest accepted")
+
+		curIndex = 0
+		self.setDriverIndex(curIndex)
+		askRequestText = self.__testFunction(self.askHelp, 2)
+		self.deactivateCollaborativeTool()
+
+		curIndex = 1
+		self.setDriverIndex(curIndex)
+		self.getCurrentDriver().get(BASE_URL+'student_collaboration/help_request_history/?Montrer+les+requêtes+clôturées=on&requests=None&showClosed=1&sort=timestamp')
+		# toggle = self.__waitElementByClassName("switch")
+		# toggle.click()
+
+
+	# stud01 asker
+	# stud02 helper
 
 	# Other class logic #
 
@@ -200,7 +218,7 @@ class Selenium:
 
 	def __testURL(self, lastURL, *exceptionArgs):
 		""" Test si l'url match l'URL courante """
-		if not re.compile(self.BASE_URL + lastURL).match(self.getCurrentDriver().current_url):
+		if not re.compile(BASE_URL + lastURL).match(self.getCurrentDriver().current_url):
 			raise BaseException(*exceptionArgs)
 
 	# Drivers stuff #
@@ -216,6 +234,7 @@ class Selenium:
 	def addDriver(self):
 		self.drivers.append(self.__initDriver())
 		self.setDriverIndex(len(self.drivers)-1)
+		self.__hideDjangoDebug()
 
 	def setDriverIndex(self, index):
 		self.driverIndex = index
@@ -224,7 +243,7 @@ class Selenium:
 
 	def logInAdmin(self, adminPseudo, adminPassword):
 		""" We consider that the given credentials already exists"""
-		self.getCurrentDriver().get(self.BASE_URL+'admin/login/?next=/admin/')
+		self.getCurrentDriver().get(BASE_URL+'admin/login/?next=/admin/')
 
 		userNameBox = self.__waitElementByName("username")
 		userNameBox.send_keys(adminPseudo)
@@ -234,7 +253,7 @@ class Selenium:
 		self.__testURL("admin/", r"Admin page wasn't loaded", r"Are you sure that the superuser username and password given are corrects?")
 
 	def logOutAdmin(self):
-		self.getCurrentDriver().get(self.BASE_URL+'admin/logout')
+		self.getCurrentDriver().get(BASE_URL+'admin/logout')
 		# If we were not connected we will be redirected, so it's not always true
 		self.__testURL("admin/logout/", r"Can't logout admin session", r"Are you sure that you were logged in as a super user?")
 
@@ -250,12 +269,12 @@ class Selenium:
 
 	def logOutUser(self):
 		""" LogOut for both user and teacher"""
-		self.getCurrentDriver().get(self.BASE_URL+'accounts/logout')
+		self.getCurrentDriver().get(BASE_URL+'accounts/logout')
 		# Nothing to check as it redirect us to homepage wherever we were previously connected or not
 
 	def addClass(self, className):
 		""" We consider that a teacher is currently logged in """
-		self.getCurrentDriver().get(self.BASE_URL+'professor/lesson/add/')
+		self.getCurrentDriver().get(BASE_URL+'professor/lesson/add/')
 		self.__fillBox("name", className)
 
 		radioButton = self.__waitElementByName("stage")
@@ -352,7 +371,7 @@ class Selenium:
 
 
 	def __logInFirstStep(self, userName):
-		self.getCurrentDriver().get(self.BASE_URL + "accounts/usernamelogin")
+		self.getCurrentDriver().get(BASE_URL + "accounts/usernamelogin")
 		self.__testURL("accounts/usernamelogin", r"You can't access the log in page", r"Are you sure that no user is already logged in ?")
 		# First enter the log in
 		self.__fillBoxSubmit("username", userName)
@@ -388,7 +407,7 @@ class Selenium:
 
 	def activateCollaborativeTool(self, postalCode, distance):
 		""" We assume that a student user is currently logged in """
-		self.getCurrentDriver().get(self.BASE_URL+"student_collaboration/settings/")
+		self.getCurrentDriver().get(BASE_URL+"student_collaboration/settings/")
 		self.__testURL("student_collaboration/settings/", r"The collaborative tool can't be accessed", r"Are you sure that a user is logged in already and that it is a student ?")
 
 		# Enable the collaborative tool it is not already
@@ -409,10 +428,29 @@ class Selenium:
 
 		distanceBox.submit()
 
+	def deactivateCollaborativeTool(self):
+		""" We assume that a student user is currently logged in """
+		self.getCurrentDriver().get(BASE_URL+"student_collaboration/settings/")
+		self.__testURL("student_collaboration/settings/", r"The collaborative tool can't be accessed", r"Are you sure that a user is logged in already and that it is a student ?")
+
+		# Disable the collaborative tool it is not already
+		collaborativeCheckBox = self.__waitElementById("collaborative_tool_check")
+		# isActivate = collaborativeCheckBox.is_selected()
+        #
+		# if isActivate:
+		toggle = self.__waitElementByClassName("switch")
+		toggle.click()
+		modalButton = self.__waitElementById("modal_button")
+		modalButton.click()
+		validateB = self.__waitElementById("submit_settings_button")
+		validateB.click()
+		# else:
+		# 	print "\tWarning : The collaborative tool was already deactivated. It's content have still been refreshed"
+
 	def askHelp(self, numberOfHelpElem):
 		""" Will automatically ask help for his first unmastered skill.
 		 We consider that the a student is logged in & have activated its collaborative tool & have at least one un mastered skill """
-		self.getCurrentDriver().get(self.BASE_URL+"student_collaboration/request_help/")
+		self.getCurrentDriver().get(BASE_URL+"student_collaboration/request_help/")
 		self.__testURL("student_collaboration/request_help/", r"The collaborative tool asking help page wasn't loaded properly", r"Are you sure that a student is logged in and already activate its contributive tool ?")
 
 		# Make the dropdown appear
@@ -435,7 +473,7 @@ class Selenium:
 	def acceptHelpRequest(self):
 		""" Will automatically accept help requests
 		We consider that the a student is logged in & have activated its collaborative tool & their is at least one, the first one will be accepted"""
-		self.getCurrentDriver().get(self.BASE_URL+"student_collaboration/provide_help/")
+		self.getCurrentDriver().get(BASE_URL+"student_collaboration/provide_help/")
 		self.__testURL("student_collaboration/provide_help/", r"The collaborative tool asking help page wasn't loaded properly", r"Are you sure that a student is logged in and already activate its contributive tool ?")
 		# Find the length of the table
 		xPathTable = "//table[@id='provide-help']"
@@ -470,7 +508,7 @@ class Selenium:
 	def openFirstDiscussion(self):
 		""" Will open the first discussion on the currently logged in student
 			We consider that a student is logged in and that the first entry on his help request history table can open the conversation"""
-		self.getCurrentDriver().get(self.BASE_URL+"student_collaboration/help_request_history/")
+		self.getCurrentDriver().get(BASE_URL+"student_collaboration/help_request_history/")
 		self.__testURL("student_collaboration/help_request_history/", r"The help request history page was not shown", r"Are you logged in as a student with the collaborative tool enable ?")
 
 		xPathFirstOpenDiscussionLink = '//*[@id="history"]/tbody[2]/tr/td[3]/a'
@@ -482,15 +520,23 @@ class Selenium:
 	def closeFirstHelpRequest(self):
 		""" Will close the first discussion on the currently logged in student
 			We consider that a student is logged in and that the first entry on his help request history table can close the conversation"""
-		self.getCurrentDriver().get(self.BASE_URL + "student_collaboration/help_request_history/")
+		driver = self.getCurrentDriver()
+		driver.get(BASE_URL + "student_collaboration/help_request_history/")
 		self.__testURL("student_collaboration/help_request_history/", r"The help request history page was not shown",
 		               r"Are you logged in as a student with the collaborative tool enable ?")
 
 		xPathHistoryTable = '//*[@id="history"]'
 		pastRawsNumber = self.__countRawsInTable(xPathHistoryTable)
 
-		xPathFirstCloseButton = '//*[@id="history"]/tbody[2]/tr/td[4]/form/input[1]'
+		# xPathFirstCloseButton = '//*[@id="history"]/tbody[2]/tr/td[4]/form/input[1]'
+		xPathFirstCloseButton = '//*[@id="history"]/tbody[2]/tr/td[4]/a'
 		self.__clickButtonByXPath(xPathFirstCloseButton)
+
+		options = self.__waitElementByName("closeReason")
+		select = Select(driver.find_element_by_name("closeReason"))
+		select.select_by_value("USER_CLOSED")
+		options.submit()
+
 
 		# We check that the entry dissapear of the history table
 		if pastRawsNumber != self.__countRawsInTable(xPathHistoryTable)+1:
